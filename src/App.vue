@@ -1,7 +1,7 @@
 <template>
   <div id="app" :style="{'width': getWidth() + 'px', 'height': getHeight() + 'px'}">
     <Turntable :images="getComponentData()" :width="getWidth()" :height="getHeight()"
-               :quality="quality" :background="background"
+               :quality="quality"
                :frame-animation-delay-ms="frameAnimationDelayMs"/>
   </div>
 </template>
@@ -16,7 +16,6 @@ export default {
     'width',
     'height',
     'quality',
-    'background',
     'frameAnimationDelayMs'],
   components: {
     Turntable,
