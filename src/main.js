@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import vueCustomElement from 'vue-custom-element'
+import 'document-register-element'
 
 Vue.config.productionTip = false
 
