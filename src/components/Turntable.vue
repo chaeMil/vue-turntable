@@ -11,12 +11,10 @@
            :ref="'draggable'"
            :style="{'width': width + 'px', 'height': height + 'px'}"></div>
       <div class="controls">
-        <div :ref="'play'" v-if="!animating" v-on:click="startAnimation()">
-          ▶
-        </div>
-        <div :ref="'play'" v-if="animating" v-on:click="stopAnimation()">
-          ▐ ▌
-        </div>
+        <button v-if="!animating" v-on:click="rotateClockwise()">↺</button>
+        <button v-if="!animating" v-on:click="startAnimation()">▶</button>
+        <button v-if="animating" v-on:click="stopAnimation()">| |</button>
+        <button v-if="!animating" v-on:click="rotateAntiClockwise()">↻</button>
       </div>
     </div>
   </div>
@@ -54,6 +52,9 @@ export default {
     getCanvasHeight: function() {
       return this.height * this.quality
     },
+    getFrameAnimationDelayMs: function() {
+      return Math.min(this.frameAnimationDelayMs | 32)
+    },
     drawImage: function(index) {
       this.drawScaledImage(this.fetchedImages[index])
     },
@@ -73,12 +74,24 @@ export default {
     startAnimation: function() {
       this.animating = true
       this.animation = setInterval(function() {
-        if (this.currentImageIndex < this.fetchedImages.length)
-          this.currentImageIndex++
-        else
-          this.currentImageIndex = 0
-        this.drawImage(this.currentImageIndex)
-      }.bind(this), Math.min(this.frameAnimationDelayMs | 32))
+        this.rotateAntiClockwise()
+      }.bind(this), this.getFrameAnimationDelayMs())
+    },
+    rotateClockwise: function() {
+      if (this.currentImageIndex === 0) {
+        this.currentImageIndex = this.fetchedImages.length - 1
+      } else {
+        this.currentImageIndex--
+      }
+      this.drawImage(this.currentImageIndex)
+    },
+    rotateAntiClockwise: function() {
+      if (this.currentImageIndex === this.fetchedImages.length) {
+        this.currentImageIndex = 0
+      } else {
+        this.currentImageIndex++
+      }
+      this.drawImage(this.currentImageIndex)
     },
     stopAnimation: function() {
       this.animating = false
@@ -90,19 +103,10 @@ export default {
         if (this.animating) return
         let direction = e.detail.data[0].currentDirection
         if (direction === 180) { //dragging right
-          if (this.currentImageIndex === 0) {
-            this.currentImageIndex = this.fetchedImages.length - 1
-          } else {
-            this.currentImageIndex--
-          }
+          this.rotateClockwise()
         } else if (direction === 360) { //dragging left
-          if (this.currentImageIndex === this.fetchedImages.length) {
-            this.currentImageIndex = 0
-          } else {
-            this.currentImageIndex++
-          }
+          this.rotateAntiClockwise()
         }
-        this.drawImage(this.currentImageIndex)
       })
     },
   },
@@ -152,11 +156,9 @@ canvas.no-antialiasing {
   bottom: 8px;
   left: 0;
   right: 0;
-  pointer-events: none;
 }
 
-.controls div {
-  pointer-events: all;
+.controls button {
   display: inline-block;
   padding: 8px;
   background: rgba(0, 0, 0, 0.5);
@@ -166,15 +168,17 @@ canvas.no-antialiasing {
   border: 1px solid rgba(150, 150, 150, 0.4);
   font-size: 24px;
   backdrop-filter: blur(10px);
+  margin-left: 4px;
+  margin-right: 4px;
 }
 
-.controls div:hover {
+.controls button:hover {
   background: white;
   color: black;
   cursor: pointer;
 }
 
-.controls div:active {
+.controls button:active {
   box-shadow: inset 0 5px 4px rgba(0, 0, 0, 0.4);
   color: black;
   background: white;

@@ -13,6 +13,9 @@
     "prefetch-image": "^1.1.0",
     "vue": "^2.6.11",
     "vue-custom-element": "^3.3.0",
+    "vue-longpress": "^1.0.2",
+    "vue-touch": "^2.0.0-beta.4",
+    "vue2-touch-events": "^3.2.1",
     "zingtouch": "^1.0.6"
   },
   "devDependencies": {
