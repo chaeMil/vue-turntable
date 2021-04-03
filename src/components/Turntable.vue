@@ -1,5 +1,6 @@
 <template>
-  <div :ref="'turntable'" class="turntable"
+  <div :ref="'turntable'"
+       class="turntable"
        :style="{'background': '#000000', 'width': width + 'px', 'height': height + 'px'}">
     <p v-if="loading" class="loading">◌</p>
     <div v-else>
@@ -109,6 +110,18 @@ export default {
         }
       })
     },
+    setupCanvasResizing: function() {
+      window.onresize = () => {
+        let turntable = this.$refs.turntable
+        let canvas = this.$refs.canvas
+        let draggable = this.$refs.draggable
+        let width = canvas.clientWidth
+        let newHeight = (width / this.width) * this.height + 'px'
+        canvas.style.height = newHeight
+        draggable.style.height = newHeight
+        turntable.style.height = newHeight
+      }
+    },
   },
   mounted: function() {
     prefetchImages(this.images)
@@ -119,6 +132,7 @@ export default {
             this.$nextTick(() => {
               this.drawScaledImage(this.fetchedImages[0])
               this.setupDragging()
+              this.setupCanvasResizing()
             })
           }, 500)
         })
@@ -138,7 +152,7 @@ export default {
 }
 
 canvas {
-  max-width: 100vw;
+  max-width: 100%;
 }
 
 canvas.no-antialiasing {

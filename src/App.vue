@@ -1,5 +1,5 @@
 <template>
-  <div id="app" :style="{'width': getWidth() + 'px', 'height': getHeight() + 'px'}">
+  <div id="app">
     <Turntable :images="getComponentData()" :width="getWidth()" :height="getHeight()"
                :quality="getQuality()"
                :antialiasing="getAntialiasing()"
