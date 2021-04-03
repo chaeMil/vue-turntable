@@ -1,0 +1,155 @@
+<template>
+  <div :ref="'turntable'" class="turntable"
+       :style="{'background': '#000000', 'width': getCanvasWidth() + 'px', 'height': getCanvasHeight() + 'px'}">
+    <p v-if="loading" class="loading">◌</p>
+    <div v-else>
+      <canvas :ref="'canvas'" :width="getCanvasWidth()" :height="getCanvasHeight()"/>
+      <div class="controls">
+        <div :ref="'play'" v-if="!animating" v-on:click="startAnimation()">
+          ▶
+        </div>
+        <div :ref="'play'" v-if="animating" v-on:click="stopAnimation()">
+          ▐ ▌
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import prefetchImages from 'prefetch-image'
+
+export default {
+  name: 'Turntable',
+  props: {
+    images: Array,
+    width: Number,
+    height: Number,
+    quality: Number,
+    background: String,
+    frameAnimationDelayMs: Number,
+  },
+  data: function() {
+    return {
+      loading: true,
+      animating: false,
+      fetchedImages: [],
+      currentImageIndex: 0,
+      currentImageSrc: null,
+      canvasImage: new Image(),
+    }
+  },
+  methods: {
+    getCanvasWidth: function() {
+      return this.width * (this.quality ?? 1)
+    },
+    getCanvasHeight: function() {
+      return this.height * (this.quality ?? 1)
+    },
+    drawImage: function(index) {
+      this.drawScaledImage(this.fetchedImages[index])
+    },
+    drawScaledImage: function(source) {
+      let canvas = this.$refs.canvas
+      let hRatio = canvas.width / source.width
+      let vRatio = canvas.height / source.height
+      let ratio = Math.min(hRatio, vRatio)
+      let centerShift_x = (canvas.width - source.width * ratio) / 2
+      let centerShift_y = (canvas.height - source.height * ratio) / 2
+      let ctx = canvas.getContext('2d')
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      this.canvasImage.src = source.src
+      ctx.drawImage(this.canvasImage, 0, 0, source.width, source.height,
+          centerShift_x, centerShift_y, source.width * ratio, source.height * ratio)
+    },
+    startAnimation: function() {
+      this.animating = true
+      this.animation = setInterval(function() {
+        if (this.currentImageIndex < this.fetchedImages.length)
+          this.currentImageIndex++
+        else
+          this.currentImageIndex = 0
+        this.drawImage(this.currentImageIndex)
+      }.bind(this), Math.min(this.frameAnimationDelayMs | 32))
+    },
+    stopAnimation: function() {
+      this.animating = false
+      clearInterval(this.animation)
+    },
+  },
+  mounted: function() {
+    prefetchImages(this.images)
+        .then((results) => {
+          this.fetchedImages = results
+          setTimeout(() => {
+            this.loading = false
+            this.$nextTick(() => {
+              this.drawScaledImage(this.fetchedImages[0])
+            })
+          }, 500)
+        })
+  },
+}
+</script>
+
+<style scoped>
+.turntable {
+  display: block;
+  position: relative;
+  user-select: none;
+  max-width: 100vw;
+  border-radius: 8px;
+  border: 1px solid rgb(150, 150, 150);
+}
+
+canvas {
+  max-width: 100vw;
+}
+
+.controls {
+  position: absolute;
+  bottom: 15px;
+  left: 0;
+  right: 0;
+}
+
+.controls div {
+  display: inline-block;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  color: white;
+  width: 64px;
+  border: 1px solid rgba(150, 150, 150, 0.4);
+  font-size: 19px;
+}
+
+.controls div:hover {
+  background: white;
+  color: black;
+  cursor: pointer;
+}
+
+.controls div:active {
+  box-shadow: inset 0 5px 4px rgba(0, 0, 0, 0.4);
+  color: black;
+  background: white;
+}
+
+.loading {
+  display: block;
+  animation:spin 4s linear infinite;
+  font-size: 120px;
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120px;
+  height: 120px;
+  text-align: center;
+  line-height: 120px;
+  margin-left: -60px;
+  margin-top: -60px;
+}
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+</style>

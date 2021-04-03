@@ -1,28 +1,41 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div id="app" :style="{'width': getWidth() + 'px', 'height': getHeight() + 'px'}">
+    <Turntable :images="getComponentData()" :width="getWidth()" :height="getHeight()"
+               :quality="quality" :background="background"
+               :frame-animation-delay-ms="frameAnimationDelayMs"/>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Turntable from './components/Turntable.vue'
 
 export default {
   name: 'App',
+  props: [
+    'images',
+    'width',
+    'height',
+    'quality',
+    'background',
+    'frameAnimationDelayMs'],
   components: {
-    HelloWorld
-  }
+    Turntable,
+  },
+  methods: {
+    getComponentData: function() {return JSON.parse(this.images)},
+    getWidth: function() {return this.width ?? 800},
+    getHeight: function() {return this.height ?? 600},
+  },
 }
 </script>
 
 <style>
 #app {
+  max-width: 100vw;
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>
