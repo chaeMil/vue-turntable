@@ -130,6 +130,7 @@ export default {
   max-width: 100vw;
   border-radius: 8px;
   border: 1px solid rgb(150, 150, 150);
+  overflow: hidden;
 }
 
 canvas {
