@@ -1,7 +1,8 @@
 <template>
   <div id="app" :style="{'width': getWidth() + 'px', 'height': getHeight() + 'px'}">
     <Turntable :images="getComponentData()" :width="getWidth()" :height="getHeight()"
-               :quality="quality"
+               :quality="getQuality()"
+               :antialiasing="getAntialiasing()"
                :frame-animation-delay-ms="frameAnimationDelayMs"/>
   </div>
 </template>
@@ -16,6 +17,7 @@ export default {
     'width',
     'height',
     'quality',
+    'antialiasing',
     'frameAnimationDelayMs'],
   components: {
     Turntable,
@@ -24,6 +26,8 @@ export default {
     getComponentData: function() {return JSON.parse(this.images)},
     getWidth: function() {return this.width ?? 800},
     getHeight: function() {return this.height ?? 600},
+    getQuality: function() {return this.quality ?? 1},
+    getAntialiasing: function() {return this.antialiasing ?? true},
   },
 }
 </script>

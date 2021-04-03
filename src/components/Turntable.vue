@@ -1,13 +1,15 @@
 <template>
   <div :ref="'turntable'" class="turntable"
-       :style="{'background': '#000000', 'width': getCanvasWidth() + 'px', 'height': getCanvasHeight() + 'px'}">
+       :style="{'background': '#000000', 'width': width + 'px', 'height': height + 'px'}">
     <p v-if="loading" class="loading">◌</p>
     <div v-else>
-      <canvas :ref="'canvas'" :width="getCanvasWidth()" :height="getCanvasHeight()"/>
+      <canvas :class="{'no-antialiasing': !antialiasing}" :ref="'canvas'"
+              :width="getCanvasWidth()" :height="getCanvasHeight()"
+              :style="{'width': width + 'px', 'height': height + 'px'}"/>
       <div class="draggable"
            :class="{'enabled': !animating}"
            :ref="'draggable'"
-           :style="{'width': getCanvasWidth() + 'px', 'height': getCanvasHeight() + 'px'}"></div>
+           :style="{'width': width + 'px', 'height': height + 'px'}"></div>
       <div class="controls">
         <div :ref="'play'" v-if="!animating" v-on:click="startAnimation()">
           ▶
@@ -33,6 +35,7 @@ export default {
     quality: Number,
     background: String,
     frameAnimationDelayMs: Number,
+    antialiasing: Boolean,
   },
   data: function() {
     return {
@@ -46,23 +49,23 @@ export default {
   },
   methods: {
     getCanvasWidth: function() {
-      return this.width * (this.quality ?? 1)
+      return this.width * this.quality
     },
     getCanvasHeight: function() {
-      return this.height * (this.quality ?? 1)
+      return this.height * this.quality
     },
     drawImage: function(index) {
       this.drawScaledImage(this.fetchedImages[index])
     },
     drawScaledImage: function(source) {
       let canvas = this.$refs.canvas
-      let hRatio = canvas.width / source.width
-      let vRatio = canvas.height / source.height
+      let hRatio = this.getCanvasWidth() / source.width
+      let vRatio = this.getCanvasHeight() / source.height
       let ratio = Math.min(hRatio, vRatio)
-      let centerShift_x = (canvas.width - source.width * ratio) / 2
-      let centerShift_y = (canvas.height - source.height * ratio) / 2
+      let centerShift_x = (this.getCanvasWidth() - source.width * ratio) / 2
+      let centerShift_y = (this.getCanvasHeight() - source.height * ratio) / 2
       let ctx = canvas.getContext('2d')
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.clearRect(0, 0, this.getCanvasWidth(), this.getCanvasHeight())
       this.canvasImage.src = source.src
       ctx.drawImage(this.canvasImage, 0, 0, source.width, source.height,
           centerShift_x, centerShift_y, source.width * ratio, source.height * ratio)
@@ -131,6 +134,16 @@ export default {
 
 canvas {
   max-width: 100vw;
+}
+
+canvas.no-antialiasing {
+  image-rendering: optimizeSpeed; /* STOP SMOOTHING, GIVE ME SPEED  */
+  image-rendering: -moz-crisp-edges; /* Firefox                        */
+  image-rendering: -o-crisp-edges; /* Opera                          */
+  image-rendering: -webkit-optimize-contrast; /* Chrome (and eventually Safari) */
+  image-rendering: pixelated; /* Chrome */
+  image-rendering: optimize-contrast; /* CSS3 Proposed                  */
+  -ms-interpolation-mode: nearest-neighbor; /* IE8+                           */
 }
 
 .controls {
