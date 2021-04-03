@@ -4,6 +4,10 @@
     <p v-if="loading" class="loading">◌</p>
     <div v-else>
       <canvas :ref="'canvas'" :width="getCanvasWidth()" :height="getCanvasHeight()"/>
+      <div class="draggable"
+           :class="{'enabled': !animating}"
+           :ref="'draggable'"
+           :style="{'width': getCanvasWidth() + 'px', 'height': getCanvasHeight() + 'px'}"></div>
       <div class="controls">
         <div :ref="'play'" v-if="!animating" v-on:click="startAnimation()">
           ▶
@@ -18,6 +22,7 @@
 
 <script>
 import prefetchImages from 'prefetch-image'
+import ZingTouch from 'zingtouch'
 
 export default {
   name: 'Turntable',
@@ -76,6 +81,27 @@ export default {
       this.animating = false
       clearInterval(this.animation)
     },
+    setupDragging: function() {
+      this.zt = new ZingTouch.Region(document.body)
+      this.zt.bind(this.$refs.draggable, 'pan', (e) => {
+        if (this.animating) return
+        let direction = e.detail.data[0].currentDirection
+        if (direction === 180) { //dragging right
+          if (this.currentImageIndex === 0) {
+            this.currentImageIndex = this.fetchedImages.length - 1
+          } else {
+            this.currentImageIndex--
+          }
+        } else if (direction === 360) { //dragging left
+          if (this.currentImageIndex === this.fetchedImages.length) {
+            this.currentImageIndex = 0
+          } else {
+            this.currentImageIndex++
+          }
+        }
+        this.drawImage(this.currentImageIndex)
+      })
+    },
   },
   mounted: function() {
     prefetchImages(this.images)
@@ -85,6 +111,7 @@ export default {
             this.loading = false
             this.$nextTick(() => {
               this.drawScaledImage(this.fetchedImages[0])
+              this.setupDragging()
             })
           }, 500)
         })
@@ -108,12 +135,14 @@ canvas {
 
 .controls {
   position: absolute;
-  bottom: 15px;
+  bottom: 8px;
   left: 0;
   right: 0;
+  pointer-events: none;
 }
 
 .controls div {
+  pointer-events: all;
   display: inline-block;
   padding: 8px;
   background: rgba(0, 0, 0, 0.5);
@@ -121,7 +150,8 @@ canvas {
   color: white;
   width: 64px;
   border: 1px solid rgba(150, 150, 150, 0.4);
-  font-size: 19px;
+  font-size: 24px;
+  backdrop-filter: blur(10px);
 }
 
 .controls div:hover {
@@ -138,7 +168,7 @@ canvas {
 
 .loading {
   display: block;
-  animation:spin 4s linear infinite;
+  animation: spin 4s linear infinite;
   font-size: 120px;
   color: white;
   position: absolute;
@@ -151,5 +181,21 @@ canvas {
   margin-left: -60px;
   margin-top: -60px;
 }
-@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+
+.draggable {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.draggable.enabled {
+  cursor: ew-resize;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
 </style>
