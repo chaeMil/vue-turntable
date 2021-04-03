@@ -110,17 +110,19 @@ export default {
         }
       })
     },
+    resizeCanvas: function() {
+      let turntable = this.$refs.turntable
+      let canvas = this.$refs.canvas
+      let draggable = this.$refs.draggable
+      let width = canvas.clientWidth
+      let newHeight = (width / this.width) * this.height + 'px'
+      canvas.style.height = newHeight
+      draggable.style.height = newHeight
+      turntable.style.height = newHeight
+    },
     setupCanvasResizing: function() {
-      window.onresize = () => {
-        let turntable = this.$refs.turntable
-        let canvas = this.$refs.canvas
-        let draggable = this.$refs.draggable
-        let width = canvas.clientWidth
-        let newHeight = (width / this.width) * this.height + 'px'
-        canvas.style.height = newHeight
-        draggable.style.height = newHeight
-        turntable.style.height = newHeight
-      }
+      this.resizeCanvas()
+      window.onresize = () => { this.resizeCanvas() }
     },
   },
   mounted: function() {
